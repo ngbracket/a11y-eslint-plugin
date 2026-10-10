@@ -55,6 +55,10 @@ The component map can also be passed per-rule
 (`'@ngbracket/a11y/accessible-name': ['error', { components: { ... } }]`); the
 per-rule option wins over the shared `settings` map.
 
+To turn on both rules as errors, spread the `recommended` preset into the same
+block in place of `plugins` and `rules`: `...a11y.configs.recommended`. You still
+set `files`, the parser and the component map yourself.
+
 ## Rules
 
 ### `accessible-name`

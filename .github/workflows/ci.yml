@@ -16,4 +16,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      # Vitest strips types without checking them, so type-check the tests here.
+      - run: npm run typecheck
       - run: npm test

@@ -12,6 +12,9 @@
     "type": "git",
     "url": "https://github.com/ngbracket/a11y-eslint-plugin"
   },
+  "bugs": {
+    "url": "https://github.com/ngbracket/a11y-eslint-plugin/issues"
+  },
   "keywords": [
     "eslint",
     "eslintplugin",
@@ -36,6 +39,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.spec.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build"
