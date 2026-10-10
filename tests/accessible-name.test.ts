@@ -4,7 +4,8 @@ import { afterAll, describe, it } from 'vitest';
 import { accessibleName } from '../src/rules/accessible-name';
 
 // Wire ESLint's RuleTester into vitest's lifecycle.
-RuleTester.afterAll = afterAll;
+// `afterAll` is a RuleTester hook its type definitions leave out.
+(RuleTester as unknown as { afterAll: typeof afterAll }).afterAll = afterAll;
 RuleTester.describe = describe;
 RuleTester.it = it;
 RuleTester.itOnly = it.only;

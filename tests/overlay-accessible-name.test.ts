@@ -3,7 +3,8 @@ import * as templateParser from '@angular-eslint/template-parser';
 import { afterAll, describe, it } from 'vitest';
 import { overlayAccessibleName } from '../src/rules/overlay-accessible-name';
 
-RuleTester.afterAll = afterAll;
+// `afterAll` is a RuleTester hook its type definitions leave out.
+(RuleTester as unknown as { afterAll: typeof afterAll }).afterAll = afterAll;
 RuleTester.describe = describe;
 RuleTester.it = it;
 RuleTester.itOnly = it.only;

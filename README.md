@@ -2,9 +2,10 @@
 
 ESLint rules that check Angular templates for missing accessible names, including
 on your own components. Tell the linter that `<app-button>` behaves like a native
-`<button>`, and it checks `<app-button>` the way it would check a button. The
-rules cover cases that `@angular-eslint`'s template accessibility rules don't,
-because those rules don't know which native element your component stands for.
+`<button>`, and it checks `<app-button>` the way it would check a button.
+`@angular-eslint`'s `elements-content` rule checks that native buttons, links and
+headings have content, but it doesn't know that `<app-button>` is a button. Use
+this plugin alongside the angular-eslint rules.
 
 Part of the `@ngbracket` Angular accessibility tooling, alongside
 [`@ngbracket/a11y-devtools`](https://github.com/ngbracket/a11y-devtools).
@@ -54,6 +55,10 @@ export default [
 The component map can also be passed per-rule
 (`'@ngbracket/a11y/accessible-name': ['error', { components: { ... } }]`); the
 per-rule option wins over the shared `settings` map.
+
+To turn on both rules as errors, spread the `recommended` preset into the same
+block in place of `plugins` and `rules`: `...a11y.configs.recommended`. You still
+set `files`, the parser and the component map yourself.
 
 ## Rules
 
