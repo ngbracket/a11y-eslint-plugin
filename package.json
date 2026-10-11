@@ -1,6 +1,6 @@
 {
   "name": "@ngbracket/a11y-eslint-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ESLint rules that check Angular templates for missing accessible names, including on custom components you map to native elements.",
   "license": "MIT",
   "author": "Duncan Faulkner",

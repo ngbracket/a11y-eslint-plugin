@@ -23,6 +23,30 @@ ruleTester.run('accessible-name', accessibleName as never, {
     { code: '<app-button aria-label="Save"></app-button>', options },
     { code: '<app-button [attr.aria-label]="label"></app-button>', options },
     { code: '<app-button>{{ label }}</app-button>', options },
+    // text and interpolation inside child elements name the button
+    { code: '<app-button><span>Save</span></app-button>', options },
+    { code: '<app-button><span><b>{{ label }}</b></span></app-button>', options },
+    { code: '<app-button><ng-container>Save</ng-container></app-button>', options },
+    { code: '<app-button><mat-icon aria-hidden="true">delete</mat-icon> Delete</app-button>', options },
+    // a child's aria-label or an image's alt is part of the name
+    { code: '<app-button><span aria-label="Close"></span></app-button>', options },
+    { code: '<app-button><img src="x.svg" alt="Close"></app-button>', options },
+    { code: '<app-button><img src="x.svg" [alt]="label"></app-button>', options },
+    // a mat-icon the template explicitly exposes
+    { code: '<app-button><mat-icon aria-hidden="false">delete</mat-icon></app-button>', options },
+    // control flow: any branch with content counts
+    { code: '<app-button>@if (busy) { Saving } @else { <span>Save</span> }</app-button>', options },
+    { code: '<app-button>@for (p of parts; track p) { {{ p }} }</app-button>', options },
+    { code: '<app-button>@switch (s) { @case (1) { One } }</app-button>', options },
+    { code: '<app-button>@defer { Save } @placeholder { <span>Save</span> }</app-button>', options },
+    // structural directives and ng-template with a directive
+    { code: '<app-button><span *ngIf="ready">Save</span></app-button>', options },
+    { code: '<app-button><span *ngFor="let p of parts">{{ p }}</span></app-button>', options },
+    { code: '<app-button><ng-template [ngIf]="ready">Save</ng-template></app-button>', options },
+    // projected or bound content can't be seen, so it's assumed to name it
+    { code: '<app-button><ng-content></ng-content></app-button>', options },
+    { code: '<app-button><span [innerHTML]="html"></span></app-button>', options },
+    { code: '<app-button [textContent]="label"></app-button>', options },
     // mapped to a native element that does not require a name
     { code: '<app-box></app-box>', options: [{ components: { 'app-box': 'div' } }] },
     // unmapped custom component is ignored
@@ -40,6 +64,36 @@ ruleTester.run('accessible-name', accessibleName as never, {
     { code: '<app-link href="/x"></app-link>', options, errors: [{ messageId: 'missingName' }] },
     {
       code: '<app-button aria-label="  "></app-button>',
+      options,
+      errors: [{ messageId: 'missingName' }],
+    },
+    // content hidden from assistive technology doesn't name it
+    {
+      code: '<app-button><span aria-hidden="true">x</span></app-button>',
+      options,
+      errors: [{ messageId: 'missingName' }],
+    },
+    { code: '<app-button><span hidden>Save</span></app-button>', options, errors: [{ messageId: 'missingName' }] },
+    // Material sets aria-hidden="true" on mat-icon by default
+    { code: '<app-button><mat-icon>delete</mat-icon></app-button>', options, errors: [{ messageId: 'missingName' }] },
+    // an image with no alt, or an empty one
+    { code: '<app-button><img src="x.svg"></app-button>', options, errors: [{ messageId: 'missingName' }] },
+    { code: '<app-button><img src="x.svg" alt=""></app-button>', options, errors: [{ messageId: 'missingName' }] },
+    // ng-template content isn't rendered in place
+    {
+      code: '<app-button><ng-template>Save</ng-template></app-button>',
+      options,
+      errors: [{ messageId: 'missingName' }],
+    },
+    // a structural directive on hidden content doesn't help
+    {
+      code: '<app-button><span *ngIf="x" aria-hidden="true">x</span></app-button>',
+      options,
+      errors: [{ messageId: 'missingName' }],
+    },
+    // whitespace-only content in nested elements and blocks
+    {
+      code: '<app-button> <span> </span> @if (a) { } </app-button>',
       options,
       errors: [{ messageId: 'missingName' }],
     },

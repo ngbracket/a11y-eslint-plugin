@@ -4,7 +4,7 @@ import { overlayAccessibleName } from './rules/overlay-accessible-name';
 const plugin = {
   meta: {
     name: '@ngbracket/a11y-eslint-plugin',
-    version: '0.1.0',
+    version: '0.1.1',
   },
   rules: {
     'accessible-name': accessibleName,
