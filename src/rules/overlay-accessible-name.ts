@@ -13,7 +13,7 @@ export type Options = [{ components?: Record<string, string> }?];
 export type MessageIds = 'missingName';
 
 const createRule = ESLintUtils.RuleCreator(
-  (name) => `https://github.com/ngbracket/a11y-eslint-plugin#${name}`,
+  (name) => `https://ngbracket.com/tools/a11y-eslint-plugin/docs/${name}`,
 );
 
 export const overlayAccessibleName = createRule<Options, MessageIds>({

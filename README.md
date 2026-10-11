@@ -65,18 +65,27 @@ set `files`, the parser and the component map yourself.
 ### `accessible-name`
 
 Flags a mapped custom component whose native element requires an accessible name
-(`button`, `a`) when none is present. An accessible name is satisfied by text
-content, interpolation, `aria-label`, `aria-labelledby` (static or bound), or
-`title`.
+(`button`, `a`) when none is present. These count as a name: `aria-label`,
+`aria-labelledby` or `title` on the element (static or bound), and text or
+interpolation inside it at any depth. Inside it, a child's `aria-label` or
+`aria-labelledby` and an `<img>` with `alt` count too. Content with
+`aria-hidden="true"` or `hidden` doesn't, and neither does `<mat-icon>` text
+unless the icon has `aria-hidden="false"`, because Angular Material hides icons
+from assistive technology by default.
 
 ```html
 <!-- error: maps to <button>, no accessible name -->
 <app-button></app-button>
+<app-button><mat-icon>delete</mat-icon></app-button>
 
 <!-- ok -->
 <app-button>Save</app-button>
+<app-button><span>Save</span></app-button>
 <app-button aria-label="Save"></app-button>
 ```
+
+Full documentation for each rule is at
+[ngbracket.com/tools/a11y-eslint-plugin](https://ngbracket.com/tools/a11y-eslint-plugin/docs/introduction).
 
 ### `overlay-accessible-name`
 

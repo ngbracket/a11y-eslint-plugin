@@ -66,13 +66,65 @@ export function hasAccessibleName(node: TmplElement): boolean {
     const name = input.name.replace(/^attr\./, '');
     if (NAME_ATTRS.has(name)) return true;
   }
-  // Non-whitespace text content, or any interpolation (assumed to name it).
-  for (const child of node.children ?? []) {
+  return hasNameFromContent(node.children ?? []);
+}
+
+/**
+ * Do these template nodes give their parent a name from content? Text and
+ * interpolation count at any depth, as do a descendant's `aria-label`,
+ * `aria-labelledby` or an `<img>`'s `alt`. Content hidden from assistive
+ * technology doesn't: elements with a static `aria-hidden="true"` or `hidden`,
+ * and `<mat-icon>` (Angular Material sets `aria-hidden="true"` on it unless the
+ * template says `aria-hidden="false"`). `@if`/`@for`/`@switch`/`@defer` branches
+ * are searched; any branch with content counts. `<ng-template>` content isn't
+ * rendered in place, so it's skipped.
+ */
+function hasNameFromContent(children: readonly TmplChild[]): boolean {
+  for (const child of children) {
     const type = child.type ?? '';
     if (type.startsWith('BoundText')) return true;
-    if (type.startsWith('Text') && String(child.value ?? '').trim() !== '') return true;
+    if (type.startsWith('Text')) {
+      if (String(child.value ?? '').trim() !== '') return true;
+      continue;
+    }
+    if (type.startsWith('Element')) {
+      const el = child as TmplElement;
+      if (isHiddenFromAt(el)) continue;
+      if (hasAriaLabel(el)) return true;
+      if (el.name === 'img' && hasAlt(el)) return true;
+      if (hasNameFromContent(el.children ?? [])) return true;
+      continue;
+    }
+    if (type.startsWith('Template')) continue;
+    // Control-flow blocks and their branches, cases and placeholders.
+    if (hasNameFromContent(blockChildren(child))) return true;
   }
   return false;
+}
+
+function isHiddenFromAt(el: TmplElement): boolean {
+  if (getStaticAttr(el, 'hidden') !== undefined) return true;
+  const ariaHidden = getStaticAttr(el, 'aria-hidden');
+  if (ariaHidden === 'true') return true;
+  return el.name === 'mat-icon' && ariaHidden !== 'false';
+}
+
+function hasAlt(el: TmplElement): boolean {
+  const alt = getStaticAttr(el, 'alt');
+  if (alt !== undefined && alt.trim() !== '') return true;
+  return (el.inputs ?? []).some((input) => input.name.replace(/^attr\./, '') === 'alt');
+}
+
+/** The child nodes of a control-flow block, whichever property holds them. */
+function blockChildren(node: TmplChild): TmplChild[] {
+  const block = node as Record<string, unknown>;
+  const out: TmplChild[] = [];
+  for (const key of ['children', 'branches', 'groups', 'cases', 'empty', 'placeholder', 'loading', 'error']) {
+    const value = block[key];
+    if (Array.isArray(value)) out.push(...(value as TmplChild[]));
+    else if (value && typeof value === 'object') out.push(value as TmplChild);
+  }
+  return out;
 }
 
 /**
