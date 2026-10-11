@@ -68,7 +68,8 @@ Flags a mapped custom component whose native element requires an accessible name
 (`button`, `a`) when none is present. These count as a name: `aria-label`,
 `aria-labelledby` or `title` on the element (static or bound), and text or
 interpolation inside it at any depth. Inside it, a child's `aria-label` or
-`aria-labelledby` and an `<img>` with `alt` count too. Content with
+`aria-labelledby`, an `<img>` with `alt`, `<ng-content>` and a bound
+`[innerHTML]` or `[textContent]` count too. Content with
 `aria-hidden="true"` or `hidden` doesn't, and neither does `<mat-icon>` text
 unless the icon has `aria-hidden="false"`, because Angular Material hides icons
 from assistive technology by default.

@@ -66,6 +66,7 @@ export function hasAccessibleName(node: TmplElement): boolean {
     const name = input.name.replace(/^attr\./, '');
     if (NAME_ATTRS.has(name)) return true;
   }
+  if (hasBoundContent(node)) return true;
   return hasNameFromContent(node.children ?? []);
 }
 
@@ -76,8 +77,11 @@ export function hasAccessibleName(node: TmplElement): boolean {
  * technology doesn't: elements with a static `aria-hidden="true"` or `hidden`,
  * and `<mat-icon>` (Angular Material sets `aria-hidden="true"` on it unless the
  * template says `aria-hidden="false"`). `@if`/`@for`/`@switch`/`@defer` branches
- * are searched; any branch with content counts. `<ng-template>` content isn't
- * rendered in place, so it's skipped.
+ * are searched; any branch with content counts, and so does an element with a
+ * structural directive (`*ngIf`). A bare `<ng-template>` isn't rendered in
+ * place, so it's skipped; one with a directive (`[ngIf]`) is searched.
+ * Projected content (`<ng-content>`) and bound `innerHTML`/`textContent` can't
+ * be seen, so like other bindings they're assumed to give a name.
  */
 function hasNameFromContent(children: readonly TmplChild[]): boolean {
   for (const child of children) {
@@ -92,10 +96,18 @@ function hasNameFromContent(children: readonly TmplChild[]): boolean {
       if (isHiddenFromAt(el)) continue;
       if (hasAriaLabel(el)) return true;
       if (el.name === 'img' && hasAlt(el)) return true;
+      if (hasBoundContent(el)) return true;
       if (hasNameFromContent(el.children ?? [])) return true;
       continue;
     }
-    if (type.startsWith('Template')) continue;
+    if (type.startsWith('Content')) return true;
+    if (type.startsWith('Template')) {
+      const tmpl = child as TmplChild & { tagName?: string; inputs?: TmplBoundAttribute[]; children?: TmplChild[] };
+      // A bare <ng-template> renders only where something stamps it out.
+      if (tmpl.tagName === 'ng-template' && !(tmpl.inputs ?? []).length) continue;
+      if (hasNameFromContent(tmpl.children ?? [])) return true;
+      continue;
+    }
     // Control-flow blocks and their branches, cases and placeholders.
     if (hasNameFromContent(blockChildren(child))) return true;
   }
@@ -107,6 +119,13 @@ function isHiddenFromAt(el: TmplElement): boolean {
   const ariaHidden = getStaticAttr(el, 'aria-hidden');
   if (ariaHidden === 'true') return true;
   return el.name === 'mat-icon' && ariaHidden !== 'false';
+}
+
+const CONTENT_PROPS = new Set(['innerHTML', 'textContent', 'innerText']);
+
+/** A binding that sets the element's content, such as `[innerHTML]`. */
+function hasBoundContent(el: TmplElement): boolean {
+  return (el.inputs ?? []).some((input) => CONTENT_PROPS.has(input.name));
 }
 
 function hasAlt(el: TmplElement): boolean {

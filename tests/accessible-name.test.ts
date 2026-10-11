@@ -39,6 +39,14 @@ ruleTester.run('accessible-name', accessibleName as never, {
     { code: '<app-button>@for (p of parts; track p) { {{ p }} }</app-button>', options },
     { code: '<app-button>@switch (s) { @case (1) { One } }</app-button>', options },
     { code: '<app-button>@defer { Save } @placeholder { <span>Save</span> }</app-button>', options },
+    // structural directives and ng-template with a directive
+    { code: '<app-button><span *ngIf="ready">Save</span></app-button>', options },
+    { code: '<app-button><span *ngFor="let p of parts">{{ p }}</span></app-button>', options },
+    { code: '<app-button><ng-template [ngIf]="ready">Save</ng-template></app-button>', options },
+    // projected or bound content can't be seen, so it's assumed to name it
+    { code: '<app-button><ng-content></ng-content></app-button>', options },
+    { code: '<app-button><span [innerHTML]="html"></span></app-button>', options },
+    { code: '<app-button [textContent]="label"></app-button>', options },
     // mapped to a native element that does not require a name
     { code: '<app-box></app-box>', options: [{ components: { 'app-box': 'div' } }] },
     // unmapped custom component is ignored
@@ -74,6 +82,12 @@ ruleTester.run('accessible-name', accessibleName as never, {
     // ng-template content isn't rendered in place
     {
       code: '<app-button><ng-template>Save</ng-template></app-button>',
+      options,
+      errors: [{ messageId: 'missingName' }],
+    },
+    // a structural directive on hidden content doesn't help
+    {
+      code: '<app-button><span *ngIf="x" aria-hidden="true">x</span></app-button>',
       options,
       errors: [{ messageId: 'missingName' }],
     },
